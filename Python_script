@@ -61,7 +61,6 @@ def exe():
                 liste_op.remove(liste_op[i])
             else:
                 cpt+=1
-        print(liste_op)
         for x in liste_op:
             if x==fois or x==div:
                 i=liste_op.index(x)
