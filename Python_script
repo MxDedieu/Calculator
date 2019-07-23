@@ -1,0 +1,261 @@
+from tkinter import *
+from tkinter import messagebox
+
+
+#fenetre
+Calcul=Tk()
+Calcul.title('Calculatrice')
+Calcul.geometry('320x320')
+Calcul['bg']='lightgray'
+
+
+##calcul/affichage
+
+Pr_list = []
+Sc_list = []
+premier_ajout = 0
+
+def convert(list):
+    if len(list)!=0:
+        string =''
+        for i in range(len(list)):
+            if type(list[i])==float or type(list[i])==int:
+                string+=str(list[i])
+            else:
+                if i>0:
+                    string+=list[i][1]
+        return string
+    else:
+        return('')
+        
+def exe():
+    global Pr_list
+    global Sc_list
+    global premier_ajout
+    Sc_list=Pr_list.copy()
+    liste_n_inter=[]
+    liste_n_def=[]
+    liste_op=[]
+    if len(Pr_list)!=0:
+        if type(Pr_list[-1])!=float and type(Pr_list[-1])!=int and Pr_list[-1] not in [(fa,'!'),(car,'²')]:
+            Pr_list.pop()
+        for i in range(len(Pr_list)):
+            if type(Pr_list[i])==float or type(Pr_list[i])==int:
+                liste_n_inter.append(Pr_list[i])
+            else:
+                if liste_n_inter!=[]:
+                    liste_n_def.append(sum([10**(len(liste_n_inter)-i-1)* liste_n_inter[i] for i in range(len(liste_n_inter)) ])) #on ajoute le nombre venant avant l'operation
+                    liste_op.append(Pr_list[i][0])  #on ajoute l'operation
+                    liste_n_inter=[]
+                else:
+                    liste_op.append(Pr_list[i][0])
+        if liste_n_inter != []:
+            liste_n_def.append(sum([10**(len(liste_n_inter)-i-1)* liste_n_inter[i] for i in range(len(liste_n_inter)) ]))
+        
+        cpt=0
+        while cpt< len(liste_op):
+            x=liste_op[cpt]
+            if x==fa or x==car:
+                i=liste_op.index(x)
+                liste_n_def[i]=x(liste_n_def[i])
+                liste_op.remove(liste_op[i])
+            else:
+                cpt+=1
+        print(liste_op)
+        for x in liste_op:
+            if x==fois or x==div:
+                i=liste_op.index(x)
+                if x==div and liste_n_def[i+1]==0:
+                    messagebox.showinfo("Erreur", "Division par zéro")
+                    Pr_list,Sc_list =[],[]
+                    Ecran1['text'] = convert(Pr_list)
+                    Ecran2['text'] = convert(Sc_list)
+                    return None
+                liste_n_def[i]=round(x(liste_n_def[i],liste_n_def[i+1]),2)
+                liste_n_def.remove(liste_n_def[i+1])
+                liste_op.remove(x)
+        if len(liste_op)!=0:
+            for i in range(len(liste_op)):
+                liste_n_def[i+1]=liste_op[i](liste_n_def[i],liste_n_def[i+1])
+        Res=liste_n_def[len(liste_n_def)-1]
+        Pr_list = [Res]
+        Ecran1['text'] = convert(Pr_list)
+        Ecran2['text'] = convert(Sc_list) + ' = '
+        premier_ajout=1
+        return Pr_list, Sc_list, premier_ajout
+
+            
+            
+            
+def plus(a,b):
+    return a+b
+    
+def moins(a,b):
+    return a-b
+    
+def fois(a,b):
+    return a*b
+    
+def div(a,b):
+    if b!=0:
+        return a/b
+
+def car(a):
+    return a**2
+    
+def fa(a):
+    tot=1
+    for i in range(1,a+1):
+        tot=i*tot
+    return tot
+        
+def addn(i):
+    global Pr_list, Sc_list, premier_ajout
+    if Pr_list!=[]:
+        if Pr_list[-1] in [(fa,'!'),(car,'²')] or premier_ajout==1:
+            premier_ajout=0
+            Pr_list=[i]
+            Ecran1['text'] = convert(Pr_list)
+            Sc_list=[]
+            Ecran2['text'] = convert(Sc_list)
+            return premier_ajout
+    Pr_list.append(i)
+    Ecran1['text'] = convert(Pr_list)
+    Sc_list=[]
+    Ecran2['text'] = convert(Sc_list)
+        
+    
+def addplus():
+    global Pr_list 
+    global premier_ajout 
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')] :
+            Pr_list.append((plus,'+'))
+        else:
+            Pr_list[-1]=(plus,'+')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+ 
+def addmoins():
+    global Pr_list 
+    global premier_ajout 
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')]:
+            Pr_list.append((moins,'-'))
+        else:
+            Pr_list[-1]=(moins,'-')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+
+def addfois():
+    global Pr_list
+    global premier_ajout 
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')]:
+            Pr_list.append((fois,'x'))
+        else:
+            Pr_list[-1]=(fois,'x')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+def adddiv():
+    global Pr_list  
+    global premier_ajout 
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')]:
+            Pr_list.append((div,':'))
+        else:
+            Pr_list[-1]=(div,':')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+
+def addcar():
+    global Pr_list  
+    global premier_ajout 
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')]:
+            Pr_list.append((car,'²'))
+        else:
+            Pr_list[-1]=(car,'²')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+    
+def addfa():
+    global Pr_list
+    global premier_ajout  
+    if Pr_list != []:
+        if type(Pr_list[-1])==float or type(Pr_list[-1])==int or Pr_list[-1] in [(fa,'!'),(car,'²')]:
+            Pr_list.append((fa,'!'))
+        else:
+            Pr_list[-1]=(fa,'!')
+        Ecran1['text'] = convert(Pr_list)
+    premier_ajout=0
+    return premier_ajout
+        
+def c():
+    global Pr_list
+    global premier_ajout 
+    if Pr_list!=[]:
+        Pr_list.pop()
+        Ecran1['text'] = convert(Pr_list)
+    Sc_list=[]
+    Ecran2['text'] = convert(Sc_list)
+    premier_ajout=0
+    return premier_ajout
+    
+##widget
+
+#Ecran
+
+Ecran1= Label(Calcul, bg= 'silver', fg='white', font=(40)) 
+Ecran1.place( x= 160,y=50, height = 40, width = 150)
+
+Ecran2= Label(Calcul, bg= 'silver', fg='white',font=(40)) 
+Ecran2.place( x= 10,y=50, height = 40, width = 150)
+
+#bouttons 
+
+Button0= Button(Calcul, text='0', bg='silver', fg = 'white', command = lambda : addn(0))
+Button1= Button(Calcul, text='1', bg='silver', fg = 'white', command = lambda : addn(1))
+Button2= Button(Calcul, text='2', bg='silver', fg = 'white', command = lambda : addn(2))
+Button3= Button(Calcul, text='3', bg='silver', fg = 'white', command = lambda : addn(3))
+Button4= Button(Calcul, text='4', bg='silver', fg = 'white', command = lambda : addn(4))
+Button5= Button(Calcul, text='5', bg='silver', fg = 'white', command = lambda : addn(5))
+Button6= Button(Calcul, text='6', bg='silver', fg = 'white', command = lambda : addn(6))
+Button7= Button(Calcul, text='7', bg='silver', fg = 'white', command = lambda : addn(7))
+Button8= Button(Calcul, text='8', bg='silver', fg = 'white', command = lambda : addn(8))
+Button9= Button(Calcul, text='9', bg='silver', fg = 'white', command = lambda : addn(9))
+Buttonplus= Button(Calcul, text='+',bg='silver', fg = 'white', font=(80), command = lambda : addplus() )
+Buttonmoins= Button(Calcul, text='-',bg='silver', fg = 'white', font=(80) , command = lambda : addmoins() )
+Buttonfois= Button(Calcul, text='x',bg='silver', fg = 'white', font=(80) , command = lambda : addfois() )
+Buttondiv= Button(Calcul, text=':',bg='silver', fg = 'white', font=(80) , command = lambda : adddiv() )
+Buttonfa= Button(Calcul, text='!',bg='silver', fg = 'white', font=(80) , command = lambda : addfa() )
+Buttoncar= Button(Calcul, text='²',bg='silver', fg = 'white', font=(80) , command = lambda : addcar() )
+ButtonC= Button(Calcul, text='C',bg='silver', fg = 'white', font=(40) , command = lambda : c())
+ButtonEN=Button(Calcul, text='=',bg='silver', fg = 'white', font=(40), command = lambda  : exe() )
+
+
+ButtonEN.place(x=270,y=270,height = 40, width = 40)
+ButtonC.place(x=170,y=270,height = 40, width = 40)
+Button0.place(x=220,y=270,height = 40, width = 40)
+Button1.place(x=170,y=220,height = 40, width = 40)
+Button2.place(x=220,y=220,height = 40, width = 40)
+Button3.place(x=270,y=220,height = 40, width = 40)
+Button4.place(x=170,y=170,height = 40, width = 40)
+Button5.place(x=220,y=170,height = 40, width = 40)
+Button6.place(x=270,y=170,height = 40, width = 40)
+Button7.place(x=170,y=120,height = 40, width = 40)
+Button8.place(x=220,y=120,height = 40, width = 40)
+Button9.place(x=270,y=120,height = 40, width = 40)
+Buttonmoins.place(x=10,y=260 , height = 50, width = 60)
+Buttonplus.place(x=80,y=260, height = 50, width = 60)
+Buttonfois.place(x = 10, y = 190, height = 50, width = 60)
+Buttondiv.place(x=80,y=190, height = 50, width = 60)
+Buttonfa.place(x=10,y=120, height = 50, width = 60)
+Buttoncar.place(x=80,y=120, height = 50, width = 60)
+Calcul.mainloop()
+
